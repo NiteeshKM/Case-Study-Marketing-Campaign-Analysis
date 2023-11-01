@@ -1,0 +1,84 @@
+Section 1: Getting the overview of the data. Select from the given options for the questions.
+
+Check out the cardinality of following columns:
+
+1.1) Different color segments (categories) provided by the company.
+
+SELECT COUNT(DISTINCT Item_Category) FROM Item;
+
+1.2) Different Coupon Types that are offered.
+
+SELECT COUNT(DISTINCT couponType) FROM CouponMapping;
+
+1.3) States where the company is currently delivering its products and services.
+
+SELECT COUNT(DISTINCT State) FROM CityData;
+
+1.4) Different Order Types.
+
+SELECT COUNT(DISTINCT OrderType) FROM CustomerTransactionData;
+
+
+Check which of the following options are correct in below questions. Identify total number of sales (transactions) happened by
+
+2.1) Yearly basis
+
+SELECT YEAR(PurchaseDate),
+COUNT(Trans_Id) AS Total_Trans
+FROM CustomerTransactionData
+GROUP BY YEAR(PurchaseDate);
+
+2.2) Quarterly basis
+
+SELECT EXTRACT(QUARTER FROM PurchaseDate),
+COUNT(Trans_Id) AS Total_Trans
+FROM CustomerTransactionData
+GROUP BY EXTRACT(QUARTER FROM PurchaseDate);
+
+2.3) Yearly and Monthly basis
+
+SELECT EXTRACT(YEAR FROM PurchaseDate),
+EXTRACT(MONTH FROM PurchaseDate),
+COUNT(Trans_Id) AS Total_Trans
+FROM CustomerTransactionData
+GROUP BY EXTRACT(YEAR FROM PurchaseDate),EXTRACT(MONTH FROM PurchaseDate);
+
+
+Identify the total purchase order by
+
+3.1) Product category
+
+SELECT I.Item_Category,
+SUM(PurchasingAmt) AS Total_Sales
+FROM CustomerTransactionData AS C
+JOIN
+Item AS I
+ON C.item_id = I.item_id
+GROUP BY I.Item_Category;
+
+3.2) Yearly and Quarterly basis
+
+SELECT EXTRACT(YEAR FROM PurchaseDate),
+EXTRACT(QUARTER FROM PurchaseDate),
+SUM(PurchasingAmt) AS Total_Sales
+FROM CustomerTransactionData
+GROUP BY EXTRACT(YEAR FROM PurchaseDate), EXTRACT(QUARTER FROM PurchaseDate);
+
+3.3) Order Type
+
+SELECT OrderType,
+SUM(PurchasingAmt) AS Total_Sales
+FROM CustomerTransactionData
+GROUP BY OrderType;
+
+3.4) City Tier
+
+SELECT CityTier,
+SUM(PurchasingAmt) AS Total_Sales
+FROM CustomerTransactionData AS CT
+JOIN
+Customer AS C
+ON C.Customer_Id = CT.Cust_Id
+JOIN CityData
+ON CityData.City_Id = C.City_Id
+GROUP BY CityTier;

@@ -1,0 +1,69 @@
+Section 3: Understanding company growth and decline
+Marketing team is interested in understanding the growth and decline pattern of the company in terms of new leads or sales amount by the customers.
+
+3.1) Identify the total growth on an year by year basis
+
+a. Based on Quantity of paint that's sold
+SELECT *
+FROM (
+SELECT year_purchase, Total_Quantity AS Total_Quantity_2022, 
+LAG(Total_Quantity) OVER(ORDER BY year_purchase) AS pastoffset_1,
+LAG(Total_Quantity,2) OVER(ORDER BY year_purchase) AS pastoffset_2,
+LAG(Total_Quantity,3) OVER(ORDER BY year_purchase) AS pastoffset_3
+FROM(
+SELECT EXTRACT(YEAR FROM PurchaseDate) AS year_purchase,
+SUM(Quantity) AS Total_Quantity 
+FROM CustomerTransactionData
+  WHERE EXTRACT(YEAR FROM PurchaseDate) < 2023
+GROUP BY EXTRACT(YEAR FROM PurchaseDate)) AS T) AS T
+WHERE year_purchase = 2022;
+
+b. Based on amount of paint that's sold
+SELECT *
+FROM (
+SELECT year_purchase, Total_Purchase AS Total_Purchase_2022, 
+LAG(Total_Purchase) OVER(ORDER BY year_purchase) AS pastoffset_1,
+LAG(Total_Purchase,2) OVER(ORDER BY year_purchase) AS pastoffset_2,
+LAG(Total_Purchase,3) OVER(ORDER BY year_purchase) AS pastoffset_3
+FROM(
+SELECT EXTRACT(YEAR FROM PurchaseDate) AS year_purchase,
+SUM(PurchasingAmt) AS Total_Purchase
+FROM CustomerTransactionData
+  WHERE EXTRACT(YEAR FROM PurchaseDate) < 2023
+GROUP BY EXTRACT(YEAR FROM PurchaseDate)) AS T) AS T
+WHERE year_purchase = 2022;
+
+c. Customers that's acquired [New + Repeated]
+SELECT *
+FROM (
+SELECT year_purchase, NewUsers AS NewUsers_2022, 
+LAG(NewUsers) OVER(ORDER BY year_purchase) AS pastoffset_1,
+LAG(NewUsers,2) OVER(ORDER BY year_purchase) AS pastoffset_2,
+LAG(NewUsers,3) OVER(ORDER BY year_purchase) AS pastoffset_3
+FROM(
+SELECT EXTRACT(YEAR FROM PurchaseDate) AS year_purchase,
+COUNT(DISTINCT Cust_Id) AS NewUsers
+FROM CustomerTransactionData
+  WHERE EXTRACT(YEAR FROM PurchaseDate) < 2023
+GROUP BY EXTRACT(YEAR FROM PurchaseDate)) AS T) AS T
+WHERE year_purchase = 2022;
+
+d. Segregate the above By OrderType 
+SELECT *
+FROM (
+SELECT year_purchase, OrderType,
+  NewUsers AS NewUsers_2022, 
+LAG(NewUsers) OVER(PARTITION BY OrderType ORDER BY year_purchase) AS pastoffset_1,
+LAG(NewUsers,2) OVER(PARTITION BY OrderType ORDER BY year_purchase) AS pastoffset_2,
+LAG(NewUsers,3) OVER(PARTITION BY OrderType ORDER BY year_purchase) AS pastoffset_3
+FROM(
+SELECT EXTRACT(YEAR FROM PurchaseDate) AS year_purchase,
+  OrderType,
+COUNT(DISTINCT Cust_Id) AS NewUsers
+FROM CustomerTransactionData
+  WHERE EXTRACT(YEAR FROM PurchaseDate) < 2023
+GROUP BY EXTRACT(YEAR FROM PurchaseDate), OrderType) AS T) AS T
+WHERE year_purchase = 2022;
+Based on the above results, we can see that the overall growth has declined in the past 1 year compared to recent years. It's very apparent from total quantities sold, total sales as well as customers acquired.
+
+

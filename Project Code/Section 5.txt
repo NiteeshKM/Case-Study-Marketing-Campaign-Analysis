@@ -1,0 +1,63 @@
+Section 5: Automating tasks
+
+Create Functions 
+a.) Get the total discount, if any.
+DELIMITER $$
+CREATE FUNCTION Discount
+(Quantity int, Price float, PurchasingAmt float)
+RETURNS INT 
+DETERMINISTIC
+BEGIN
+    DECLARE discount INT;
+    SET discount = Quantity * Price - PurchasingAmt;
+    RETURN discount; 
+END$$
+DELIMITER ;
+
+b.) Get the days/month/year elapsed since the last purchase of a customer depending on input from the user.
+DELIMITER $$
+CREATE FUNCTION Time_Elapsed
+(val varchar(4), date_last_purchase date)
+RETURNS INT 
+DETERMINISTIC
+BEGIN
+    DECLARE time_elapsed INT;
+    SET time_elapsed = IF(val='day', DATEDIFF(NOW(), date_last_purchase), YEAR(NOW()) - YEAR(date_last_purchase));
+    RETURN time_elapsed; 
+END$$
+DELIMITER ;
+
+
+
+
+
+Create Stored Procedures 
+a.) Identify whether a particular transaction amount (purchase amount) is 'correct' or 'not correct'.
+
+It is correct if price and quantity are used to calculate without a coupon. In case of a coupon, the coupon amount should be deducted from the original amount given the original amount is greater than equal to min purchase for a coupon; else you can simply calculate original amount based on quantity. [Input will be transaction id] [Note: Look out for null coupon ids]
+
+DELIMITER $$
+CREATE PROCEDURE PurchaseAmountValidation (IN p1 varchar(32), OUT p2 varchar(128))
+BEGIN 
+    SELECT
+    IF(PurchasingAmt != totalamt, 'not correct', 'correct') AS message
+    INTO p2
+    FROM (
+	SELECT CT.PurchasingAmt,
+    IF( CT.coupon_id IS NOT NULL AND Quantity * Price >= Min_Purchase,  Quantity * Price - IF(couponType != 'Flat',  Quantity * Price * Value * 0.01, Value), Quantity * Price) AS totalamt
+    FROM
+    Item AS I
+    JOIN
+    CustomerTransactionData AS CT
+    ON I.Item_Id = CT.item_id
+    LEFT JOIN CouponMapping AS CM
+    ON CT.coupon_id = CM.coupon_id
+    WHERE CT.Trans_Id = p1) AS T;
+END $$
+DELIMITER ;
+
+CALL PurchaseAmountValidation('TID00240', @p2);
+SELECT @p2;
+
+
+

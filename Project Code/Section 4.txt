@@ -1,0 +1,33 @@
+Section 4: Market basket analysis
+
+A market basket analysis is defined as a customer’s overall buying pattern of different sets of products. Essentially, the marketing team wants to understand customer purchasing patterns. Their proposal is if they promote the products in their next campaign, which are bought a couple of times together, then this will increase the revenue for the company.
+
+Q1. Please identify the dates when the same customer has purchased some product from the company outlets.
+SELECT C1.Cust_Id, C1.PurchaseDate AS PurchaseDate1, C2.PurchaseDate AS PurchaseDate FROM CustomerTransactionData AS C1 INNER JOIN CustomerTransactionData AS C2 ON C1.Cust_Id = C2.Cust_Id WHERE C1.Trans_Id != C2.Trans_Id AND C1.OrderType = C2.OrderType AND C1.item_id != C2.item_id;
+
+Out of the first query where you have captured a repeated set of customers, please identify the same combination of products coming at least thrice sorted in descending order of their appearance.
+SELECT CONCAT_WS(",", C1.item_id, C2.item_id) AS Item_Combination,
+COUNT(*) AS TotalTransaction
+FROM CustomerTransactionData AS C1
+INNER JOIN CustomerTransactionData AS C2
+ON C1.Cust_Id = C2.Cust_Id
+WHERE C1.Trans_Id != C2.Trans_Id 
+AND C1.OrderType = C2.OrderType
+AND C1.item_id != C2.item_id
+GROUP BY CONCAT_WS(",", C1.item_id, C2.item_id)
+HAVING COUNT(*) >= 3
+ORDER BY COUNT(*) DESC;
+
+Out of the above combinations that are coming thrice for repeated sets of customers, please check which of the combinations are popular in the household sector.
+SELECT C1.OrderType, CONCAT_WS(",", C1.item_id, C2.item_id) AS Item_Combination,
+COUNT(*) AS TotalTransaction
+FROM CustomerTransactionData AS C1
+INNER JOIN CustomerTransactionData AS C2
+ON C1.Cust_Id = C2.Cust_Id
+WHERE C1.Trans_Id != C2.Trans_Id 
+AND C1.OrderType = C2.OrderType
+AND C1.item_id != C2.item_id
+GROUP BY C1.OrderType, CONCAT_WS(",", C1.item_id, C2.item_id)
+HAVING COUNT(*) >= 3
+ORDER BY COUNT(*) DESC;
+

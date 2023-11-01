@@ -1,0 +1,26 @@
+Section 2: Understanding lead conversion
+
+Company wants to understand the customer path to conversion as a potential purchaser based on our campaigns.
+
+2.1) Identify the total number of transactions with campaign coupon vs total number of transactions without campaign coupon. Choose from the following:
+
+SELECT 'Without Coupons' AS CampaignCoupons,
+COUNT(*) AS TotalTransactions FROM CustomerTransactionData
+WHERE campaign_id IS NULL
+UNION ALL
+SELECT 'With Coupons' AS CampaignCoupons,
+COUNT(*) AS TotalTransactions FROM CustomerTransactionData
+WHERE campaign_id IS NOT NULL;
+
+2.2) Identify the number of customers with first purchase done with or without campaign coupons .
+
+SELECT COUNT(coupon_id) AS TotalCustomersFirstPurchaseWcoupon, COUNT(*) - COUNT(coupon_id) AS TotalCustomersFirstPurchaseWithoutcoupon
+FROM CustomerTransactionData
+WHERE Trans_Id IN (
+SELECT
+FIRST_VALUE(Trans_Id) OVER(PARTITION BY Cust_Id ORDER BY PurchaseDate RANGE BETWEEN
+UNBOUNDED PRECEDING AND
+UNBOUNDED FOLLOWING) AS trans_id
+FROM CustomerTransactionData);
+
+
